@@ -170,9 +170,9 @@ class MNISTDataProvider(DataProvider):
         self.num_classes = 10
         # construct path to data using os.path.join to ensure the correct path
         # separator for the current platform / OS is used
-        # MLP_DATA_DIR environment variable should point to the data directory
+        # MLP_CWK2_DATA_DIR environment variable should point to the data directory
         data_path = os.path.join(
-            os.environ['MLP_DATA_DIR'], 'mnist-{0}.npz'.format(which_set))
+            os.environ['MLP_CWK2_DATA_DIR'], 'mnist-{0}.npz'.format(which_set))
         assert os.path.isfile(data_path), (
             'Data file does not exist at expected path: ' + data_path
         )
@@ -236,9 +236,9 @@ class EMNISTDataProvider(DataProvider):
         self.num_classes = 47
         # construct path to data using os.path.join to ensure the correct path
         # separator for the current platform / OS is used
-        # MLP_DATA_DIR environment variable should point to the data directory
+        # MLP_CWK2_DATA_DIR environment variable should point to the data directory
         data_path = os.path.join(
-            os.environ['MLP_DATA_DIR'], 'emnist-{0}.npz'.format(which_set))
+            os.environ['MLP_CWK2_DATA_DIR'], 'emnist-{0}.npz'.format(which_set))
         assert os.path.isfile(data_path), (
             'Data file does not exist at expected path: ' + data_path
         )
@@ -303,7 +303,7 @@ class MetOfficeDataProvider(DataProvider):
             rng (RandomState): A seeded random number generator.
         """
         data_path = os.path.join(
-            os.environ['MLP_DATA_DIR'], 'HadSSP_daily_qc.txt')
+            os.environ['MLP_CWK2_DATA_DIR'], 'HadSSP_daily_qc.txt')
         assert os.path.isfile(data_path), (
             'Data file does not exist at expected path: ' + data_path
         )
@@ -351,7 +351,7 @@ class CCPPDataProvider(DataProvider):
             rng (RandomState): A seeded random number generator.
         """
         data_path = os.path.join(
-            os.environ['MLP_DATA_DIR'], 'ccpp_data.npz')
+            os.environ['MLP_CWK2_DATA_DIR'], 'ccpp_data.npz')
         assert os.path.isfile(data_path), (
             'Data file does not exist at expected path: ' + data_path
         )
