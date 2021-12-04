@@ -42,9 +42,12 @@ val_data_loader = DataLoader(val_data, batch_size=args.batch_size, shuffle=True,
 test_data_loader = DataLoader(test_data, batch_size=args.batch_size, shuffle=True, num_workers=4)
 
 # Task 3.4
-if args.block_type == 'custom_conv_block':
-    processing_block_type = task3_cpb
-    dim_reduction_block_type = task3_cdrb
+if args.block_type == 'bn_conv_block': # Batch normalisation
+    processing_block_type = CPB_bn
+    dim_reduction_block_type = CDRB_bn
+elif args.block_type == 'bn_rc_conv_block': # Batch normalisation & residual connections
+    processing_block_type = CPB_bn_rc
+    dim_reduction_block_type = CDRB_bn_rc
 elif args.block_type == 'conv_block':
     processing_block_type = ConvolutionalProcessingBlock
     dim_reduction_block_type = ConvolutionalDimensionalityReductionBlock
