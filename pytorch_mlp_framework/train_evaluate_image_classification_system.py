@@ -41,7 +41,11 @@ train_data_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=T
 val_data_loader = DataLoader(val_data, batch_size=args.batch_size, shuffle=True, num_workers=4)
 test_data_loader = DataLoader(test_data, batch_size=args.batch_size, shuffle=True, num_workers=4)
 
-if args.block_type == 'conv_block':
+# Task 3.4
+if args.block_type == 'custom_conv_block':
+    processing_block_type = task3_cpb
+    dim_reduction_block_type = task3_cdrb
+elif args.block_type == 'conv_block':
     processing_block_type = ConvolutionalProcessingBlock
     dim_reduction_block_type = ConvolutionalDimensionalityReductionBlock
 elif args.block_type == 'empty_block':

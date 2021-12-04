@@ -340,6 +340,8 @@ class ConvolutionalNetwork(nn.Module):
         self.logit_linear_layer.reset_parameters()
         
 #############################################################################
+# TASK 3: Solutions and experiments
+
 
 class task3_cpb(nn.Module):
     def __init__(self, input_shape, num_filters, kernel_size, padding, bias, dilation):
