@@ -368,6 +368,8 @@ class CPB_bn(nn.Module):
 
         out = self.layer_dict['conv_0'].forward(out)
         out = F.leaky_relu(out)
+        
+        out = self.batch_normalise(out)
 
         self.layer_dict['conv_1'] = nn.Conv2d(in_channels=out.shape[1], out_channels=self.num_filters, bias=self.bias,
                                               kernel_size=self.kernel_size, dilation=self.dilation,
@@ -380,8 +382,6 @@ class CPB_bn(nn.Module):
 
     def forward(self, x):
         out = x
-        
-        out = self.batch_normalise(out)
         
         out = self.layer_dict['conv_0'].forward(out)
         out = F.leaky_relu(out)
@@ -421,6 +421,8 @@ class CDRB_bn(nn.Module):
 
         out = self.layer_dict['conv_0'].forward(out)
         out = F.leaky_relu(out)
+        
+        out = self.batch_normalise(out)
 
         out = F.avg_pool2d(out, self.reduction_factor)
 
@@ -435,8 +437,6 @@ class CDRB_bn(nn.Module):
 
     def forward(self, x):
         out = x
-        
-        out = self.batch_normalise(out)
 
         out = self.layer_dict['conv_0'].forward(out)
         out = F.leaky_relu(out)
@@ -444,8 +444,6 @@ class CDRB_bn(nn.Module):
         out = self.batch_normalise(out)
 
         out = F.avg_pool2d(out, self.reduction_factor)
-        
-        # bn?
 
         out = self.layer_dict['conv_1'].forward(out)
         out = F.leaky_relu(out)
@@ -481,6 +479,8 @@ class CPB_bn_rc(nn.Module):
 
         out = self.layer_dict['conv_0'].forward(out)
         out = F.leaky_relu(out)
+        
+        out = self.batch_normalise(out)
 
         self.layer_dict['conv_1'] = nn.Conv2d(in_channels=out.shape[1], out_channels=self.num_filters, bias=self.bias,
                                               kernel_size=self.kernel_size, dilation=self.dilation,
@@ -493,8 +493,6 @@ class CPB_bn_rc(nn.Module):
 
     def forward(self, x):
         out = x
-        
-        out = self.batch_normalise(out)
         
         out = self.layer_dict['conv_0'].forward(out)
         out = F.leaky_relu(out)
