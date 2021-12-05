@@ -367,15 +367,21 @@ class CPB_bn(nn.Module):
                                               padding=self.padding, stride=1)
 
         out = self.layer_dict['conv_0'].forward(out)
-        out = F.leaky_relu(out)
         
-        out = self.batch_normalise(out)
+        self.layer_dict['bn_0'] = nn.BatchNorm2d(num_features=out.shape[1])
+        out = self.layer_dict['bn_0'].forward(out)
+
+        out = F.leaky_relu(out)
 
         self.layer_dict['conv_1'] = nn.Conv2d(in_channels=out.shape[1], out_channels=self.num_filters, bias=self.bias,
                                               kernel_size=self.kernel_size, dilation=self.dilation,
                                               padding=self.padding, stride=1)
 
         out = self.layer_dict['conv_1'].forward(out)
+
+        self.layer_dict['bn_1'] = nn.BatchNorm2d(num_features=out.shape[1])
+        out = self.layer_dict['bn_1'].forward(out)
+        
         out = F.leaky_relu(out)
 
         print(out.shape)
@@ -384,17 +390,14 @@ class CPB_bn(nn.Module):
         out = x
         
         out = self.layer_dict['conv_0'].forward(out)
+        out = self.layer_dict['bn_0'].forward(out)
         out = F.leaky_relu(out)
-        
-        out = self.batch_normalise(out)
 
         out = self.layer_dict['conv_1'].forward(out)
+        out = self.layer_dict['bn_1'].forward(out)
         out = F.leaky_relu(out)
 
         return out
-    
-    def batch_normalise(self, out):
-        return torch.subtract(out, out.mean().item())/out.var().sqrt().item()
 
 
 class CDRB_bn(nn.Module):
@@ -420,9 +423,14 @@ class CDRB_bn(nn.Module):
                                               padding=self.padding, stride=1)
 
         out = self.layer_dict['conv_0'].forward(out)
+        
+        #self.layer_dict['bn_0'] = nn.BatchNorm2d(num_features=out.shape[1])
+        #out = self.layer_dict['bn_0'].forward(out)
+        
         out = F.leaky_relu(out)
         
-        out = self.batch_normalise(out)
+        self.layer_dict['bn_0'] = nn.BatchNorm2d(num_features=out.shape[1])
+        out = self.layer_dict['bn_0'].forward(out)
 
         out = F.avg_pool2d(out, self.reduction_factor)
 
@@ -431,6 +439,10 @@ class CDRB_bn(nn.Module):
                                               padding=self.padding, stride=1)
 
         out = self.layer_dict['conv_1'].forward(out)
+
+        #self.layer_dict['bn_1'] = nn.BatchNorm2d(num_features=out.shape[1])
+        #out = self.layer_dict['bn_1'].forward(out)
+        
         out = F.leaky_relu(out)
 
         print(out.shape)
@@ -439,19 +451,17 @@ class CDRB_bn(nn.Module):
         out = x
 
         out = self.layer_dict['conv_0'].forward(out)
+        #out = self.layer_dict['bn_0'].forward(out)
         out = F.leaky_relu(out)
-        
-        out = self.batch_normalise(out)
+        out = self.layer_dict['bn_0'].forward(out)
 
         out = F.avg_pool2d(out, self.reduction_factor)
 
         out = self.layer_dict['conv_1'].forward(out)
+        #out = self.layer_dict['bn_1'].forward(out)
         out = F.leaky_relu(out)
 
         return out
-    
-    def batch_normalise(self, out):
-        return torch.subtract(out, out.mean().item())/out.var().sqrt().item()
     
     
 # BATCH NORMALISATION AND RESIDUAL CONNECTIONS
@@ -505,7 +515,7 @@ class CPB_bn_rc(nn.Module):
         return out
     
     def batch_normalise(self, out):
-        return torch.subtract(out, out.mean().item())/out.var().sqrt().item()
+        return torch.subtract(out, out.mean().item())/(out.var().sqrt().item() + 0.01)
 
 
 class CDRB_bn_rc(nn.Module):
@@ -564,4 +574,4 @@ class CDRB_bn_rc(nn.Module):
         return out
     
     def batch_normalise(self, out):
-        return torch.subtract(out, out.mean().item())/out.var().sqrt().item()
+        return torch.subtract(out, out.mean().item())/(out.var().sqrt().item() + 0.01)
