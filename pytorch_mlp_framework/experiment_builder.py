@@ -73,7 +73,7 @@ class ExperimentBuilder(nn.Module):
         print('Total number of linear layers', num_linear_layers)
 
         self.optimizer = optim.Adam(self.parameters(), amsgrad=False,
-                                    weight_decay=weight_decay_coefficient, lr=1e-3)
+                                    weight_decay=weight_decay_coefficient, lr=1e-2)
         self.learning_rate_scheduler = optim.lr_scheduler.CosineAnnealingLR(self.optimizer,
                                                                             T_max=num_epochs,
                                                                             eta_min=0.00002)
@@ -130,7 +130,7 @@ class ExperimentBuilder(nn.Module):
         """
         plt.plot(all_grads, alpha=0.3, color="b")
         plt.hlines(0, 0, len(all_grads)+1, linewidth=1, color="k" )
-        plt.xticks(range(0,len(all_grads), 1), layers, rotation="vertical")
+        plt.xticks(range(0,len(all_grads), 1), layers, rotation="vertical", fontsize=6)
         plt.xlim(xmin=0, xmax=len(all_grads))
         plt.xlabel("Layers")
         plt.ylabel("Average Gradient")
