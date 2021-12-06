@@ -500,16 +500,28 @@ class CPB_bn_rc(nn.Module):
                                               padding=self.padding, stride=1)
 
         out = self.layer_dict['conv_0'].forward(out)
+        
+        self.layer_dict['bn_0'] = nn.BatchNorm2d(num_features=out.shape[1])
+        out = self.layer_dict['bn_0'].forward(out)
+
         out = F.leaky_relu(out)
         
-        out = self.batch_normalise(out)
+        #self.layer_dict['bn_0'] = nn.BatchNorm2d(num_features=out.shape[1])
+        #out = self.layer_dict['bn_0'].forward(out)
 
         self.layer_dict['conv_1'] = nn.Conv2d(in_channels=out.shape[1], out_channels=self.num_filters, bias=self.bias,
                                               kernel_size=self.kernel_size, dilation=self.dilation,
                                               padding=self.padding, stride=1)
 
         out = self.layer_dict['conv_1'].forward(out)
-        out = F.leaky_relu(out)
+
+        self.layer_dict['bn_1'] = nn.BatchNorm2d(num_features=out.shape[1])
+        out = self.layer_dict['bn_1'].forward(out)
+        
+        out = F.leaky_relu(out + x)
+        
+        #self.layer_dict['bn_1'] = nn.BatchNorm2d(num_features=out.shape[1])
+        #out = self.layer_dict['bn_1'].forward(out) + x
 
         print(out.shape)
 
@@ -517,17 +529,16 @@ class CPB_bn_rc(nn.Module):
         out = x
         
         out = self.layer_dict['conv_0'].forward(out)
+        out = self.layer_dict['bn_0'].forward(out)
         out = F.leaky_relu(out)
-        
-        out = self.batch_normalise(out)
+        #out = self.layer_dict['bn_0'].forward(out)
 
         out = self.layer_dict['conv_1'].forward(out)
-        out = F.leaky_relu(out)
+        out = self.layer_dict['bn_1'].forward(out)
+        out = F.leaky_relu(out + x)
+        #out = self.layer_dict['bn_1'].forward(out) + x
 
         return out
-    
-    def batch_normalise(self, out):
-        return torch.subtract(out, out.mean().item())/(out.var().sqrt().item() + 0.01)
 
 
 class CDRB_bn_rc(nn.Module):
@@ -553,7 +564,14 @@ class CDRB_bn_rc(nn.Module):
                                               padding=self.padding, stride=1)
 
         out = self.layer_dict['conv_0'].forward(out)
+        
+        self.layer_dict['bn_0'] = nn.BatchNorm2d(num_features=out.shape[1])
+        out = self.layer_dict['bn_0'].forward(out)
+        
         out = F.leaky_relu(out)
+        
+        #self.layer_dict['bn_0'] = nn.BatchNorm2d(num_features=out.shape[1])
+        #out = self.layer_dict['bn_0'].forward(out)
 
         out = F.avg_pool2d(out, self.reduction_factor)
 
@@ -562,28 +580,57 @@ class CDRB_bn_rc(nn.Module):
                                               padding=self.padding, stride=1)
 
         out = self.layer_dict['conv_1'].forward(out)
+
+        self.layer_dict['bn_1'] = nn.BatchNorm2d(num_features=out.shape[1])
+        out = self.layer_dict['bn_1'].forward(out)
+        
         out = F.leaky_relu(out)
+        
+        #self.layer_dict['bn_1'] = nn.BatchNorm2d(num_features=out.shape[1])
+        #out = self.layer_dict['bn_1'].forward(out)
 
         print(out.shape)
 
     def forward(self, x):
         out = x
-        
-        out = self.batch_normalise(out)
 
         out = self.layer_dict['conv_0'].forward(out)
+        out = self.layer_dict['bn_0'].forward(out)
         out = F.leaky_relu(out)
-        
-        out = self.batch_normalise(out)
+        #out = self.layer_dict['bn_0'].forward(out)
 
         out = F.avg_pool2d(out, self.reduction_factor)
-        
-        # bn?
 
         out = self.layer_dict['conv_1'].forward(out)
+        out = self.layer_dict['bn_1'].forward(out)
         out = F.leaky_relu(out)
+        #out = self.layer_dict['bn_1'].forward(out)
 
         return out
     
-    def batch_normalise(self, out):
-        return torch.subtract(out, out.mean().item())/(out.var().sqrt().item() + 0.01)
+
+class ResidualBlock(nn.Module):
+    def __init__(self, input_shape=None, num_filters=None, kernel_size=None, padding=None, bias=None, dilation=None,
+                 reduction_factor=None):
+        super(EmptyBlock, self).__init__()
+
+        self.num_filters = num_filters
+        self.kernel_size = kernel_size
+        self.input_shape = input_shape
+        self.padding = padding
+        self.bias = bias
+        self.dilation = dilation
+
+        self.build_module()
+
+    def build_module(self):
+        self.layer_dict = nn.ModuleDict()
+        x = torch.zeros(self.input_shape)
+        self.layer_dict['Identity'] = nn.Identity()
+
+    def forward(self, x):
+        out = x
+
+        out = self.layer_dict['Identity'].forward(out)
+
+        return out
