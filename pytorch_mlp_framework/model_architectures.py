@@ -612,7 +612,7 @@ class CDRB_bn_rc(nn.Module):
 # EXTENSION: BN+RC FOR 3 LAYER BLOCKS
 class CPB_4l(nn.Module):
     def __init__(self, input_shape, num_filters, kernel_size, padding, bias, dilation):
-        super(CPB_bn_rc, self).__init__()
+        super(CPB_4l, self).__init__()
 
         self.num_filters = num_filters
         self.kernel_size = kernel_size
@@ -709,7 +709,7 @@ class CPB_4l(nn.Module):
 
 class CDRB_4l(nn.Module):
     def __init__(self, input_shape, num_filters, kernel_size, padding, bias, dilation, reduction_factor):
-        super(CDRB_bn_rc, self).__init__()
+        super(CDRB_4l, self).__init__()
 
         self.num_filters = num_filters
         self.kernel_size = kernel_size
