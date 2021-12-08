@@ -158,11 +158,10 @@ class ExperimentBuilder(nn.Module):
         """
         ########################################
         for layer, params in named_parameters:
-            if ('weight' in layer) and (params.requires_grad):
-                if withBN or (not 'bn' in layer):
-                    all_grads.append(params.grad.abs().mean().item())
-                    layer = layer.replace('layer_dict.', '').replace('.weight', '').replace('.', '_') # Removing clutter 
-                    layers.append(layer)
+            if ('weight' in layer) and (params.requires_grad) and (withBN or (not 'bn' in layer)):
+                all_grads.append(params.grad.abs().mean().item())
+                layer = layer.replace('layer_dict.', '').replace('.weight', '').replace('.', '_') # removing clutter in layer name
+                layers.append(layer)
         ########################################
         
         plt = self.plot_func_def(all_grads, layers, withBN, ax)
