@@ -48,6 +48,9 @@ if args.block_type == 'bn_conv_block': # Batch normalisation
 elif args.block_type == 'bn_rc_conv_block': # Batch normalisation & residual connections
     processing_block_type = CPB_bn_rc
     dim_reduction_block_type = CDRB_bn_rc
+elif args.block_type == 'ext_4layer_block':
+    processing_block_type = CPB_4l
+    dim_reduction_block_type = CDRB_4l
 elif args.block_type == 'conv_block':
     processing_block_type = ConvolutionalProcessingBlock
     dim_reduction_block_type = ConvolutionalDimensionalityReductionBlock
