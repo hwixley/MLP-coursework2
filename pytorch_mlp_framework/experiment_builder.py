@@ -309,17 +309,21 @@ class ExperimentBuilder(nn.Module):
             if not os.path.exists(os.path.join(self.experiment_saved_models, 'gradient_flow_plots')):
                 os.mkdir(os.path.join(self.experiment_saved_models, 'gradient_flow_plots'))
             
+            # Check if the network uses BN
             cnnHasBN = False
             for layer, _ in self.model.named_parameters():
                 if "bn" in layer and "block" in layer:
                     cnnHasBN = True
             
+            # Displays gradient flow with and without BN layers
             if cnnHasBN:
                 ax1 = self.plot_grad_flow(self.model.named_parameters(), 1, 0, ax1)
                 ax2 = self.plot_grad_flow(self.model.named_parameters(), 0, 0, ax2)
                 
                 figBN.tight_layout()
                 figBN.savefig(os.path.join(self.experiment_saved_models, 'gradient_flow_plots', "epoch{}.pdf".format(str(epoch_idx))))
+            
+            # Displays gradient flow for a network without BN
             else:
                 ax = self.plot_grad_flow(self.model.named_parameters(), 0, 1, ax)
                 
