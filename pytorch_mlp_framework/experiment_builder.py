@@ -73,7 +73,7 @@ class ExperimentBuilder(nn.Module):
         print('Total number of linear layers', num_linear_layers)
 
         self.optimizer = optim.Adam(self.parameters(), amsgrad=False,
-                                    weight_decay=weight_decay_coefficient)
+                                    weight_decay=weight_decay_coefficient, lr=1e-2)
         self.learning_rate_scheduler = optim.lr_scheduler.CosineAnnealingLR(self.optimizer,
                                                                             T_max=num_epochs,
                                                                             eta_min=0.00002)
@@ -141,7 +141,7 @@ class ExperimentBuilder(nn.Module):
         return plt
         
     
-    def plot_grad_flow(self, named_parameters):
+    def plot_grad_flow(self, named_parameters, withBN):
         """
         The function is being called in Line 298 of this file. 
         Receives the parameters of the model being trained. Returns plot of gradient flow for the given model parameters.
@@ -156,9 +156,15 @@ class ExperimentBuilder(nn.Module):
         ########################################
         for layer, params in named_parameters:
             if ('weight' in layer) and (params.requires_grad):
-                all_grads.append(params.grad.abs().mean().item())
-                layer = layer.replace('layer_dict.', '').replace('.weight', '').replace('.', '_') # Removing clutter 
-                layers.append(layer)
+                if withBN:
+                    all_grads.append(params.grad.abs().mean().item())
+                    layer = layer.replace('layer_dict.', '').replace('.weight', '').replace('.', '_') # Removing clutter 
+                    layers.append(layer)
+                else:
+                    if not ('bn' in layer) or ('conv_bn' in layer):
+                        all_grads.append(params.grad.abs().mean().item())
+                        layer = layer.replace('layer_dict.', '').replace('.weight', '').replace('.', '_') # Removing clutter 
+                        layers.append(layer)
         ########################################
             
         
@@ -298,11 +304,17 @@ class ExperimentBuilder(nn.Module):
             ################################################################
             ##### Plot Gradient Flow at each Epoch during Training  ######
             print("Generating Gradient Flow Plot at epoch {}".format(epoch_idx))
-            plt = self.plot_grad_flow(self.model.named_parameters())
+            plt_bn = self.plot_grad_flow(self.model.named_parameters(), True)
             if not os.path.exists(os.path.join(self.experiment_saved_models, 'gradient_flow_plots')):
                 os.mkdir(os.path.join(self.experiment_saved_models, 'gradient_flow_plots'))
                 # plt.legend(loc="best")
-            plt.savefig(os.path.join(self.experiment_saved_models, 'gradient_flow_plots', "epoch{}.pdf".format(str(epoch_idx))))
+            plt_bn.savefig(os.path.join(self.experiment_saved_models, 'gradient_flow_plots', "epoch{}_bn.pdf".format(str(epoch_idx))))
+            
+            plt = self.plot_grad_flow(self.model.named_parameters(), False)
+            if not os.path.exists(os.path.join(self.experiment_saved_models, 'gradient_flow_plots')):
+                os.mkdir(os.path.join(self.experiment_saved_models, 'gradient_flow_plots'))
+                # plt.legend(loc="best")
+            plt.savefig(os.path.join(self.experiment_saved_models, 'gradient_flow_plots', "epoch{}_noBN.pdf".format(str(epoch_idx))))
             ################################################################
         
         print("Generating test set evaluation metrics")
