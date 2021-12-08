@@ -156,17 +156,14 @@ class ExperimentBuilder(nn.Module):
         ########################################
         for layer, params in named_parameters:
             if ('weight' in layer) and (params.requires_grad):
-                if withBN:
+                if withBN or (not 'bn' in layer) or ('bn' in layer and 'input_conv' in layer):
                     all_grads.append(params.grad.abs().mean().item())
                     layer = layer.replace('layer_dict.', '').replace('.weight', '').replace('.', '_') # Removing clutter 
                     layers.append(layer)
+                    print(layer)
                 else:
-                    if not ('bn' in layer) or ('conv_bn' in layer):
-                        all_grads.append(params.grad.abs().mean().item())
-                        layer = layer.replace('layer_dict.', '').replace('.weight', '').replace('.', '_') # Removing clutter 
-                        layers.append(layer)
+                    print("not " + layer) 
         ########################################
-            
         
         plt = self.plot_func_def(all_grads, layers)
         
@@ -304,11 +301,13 @@ class ExperimentBuilder(nn.Module):
             ################################################################
             ##### Plot Gradient Flow at each Epoch during Training  ######
             print("Generating Gradient Flow Plot at epoch {}".format(epoch_idx))
-            plt_bn = self.plot_grad_flow(self.model.named_parameters(), True)
+            plt = self.plot_grad_flow(self.model.named_parameters(), True)
             if not os.path.exists(os.path.join(self.experiment_saved_models, 'gradient_flow_plots')):
                 os.mkdir(os.path.join(self.experiment_saved_models, 'gradient_flow_plots'))
                 # plt.legend(loc="best")
-            plt_bn.savefig(os.path.join(self.experiment_saved_models, 'gradient_flow_plots', "epoch{}_bn.pdf".format(str(epoch_idx))))
+            plt.savefig(os.path.join(self.experiment_saved_models, 'gradient_flow_plots', "epoch{}_bn.pdf".format(str(epoch_idx))))
+            
+            plt.figure().clear()
             
             plt = self.plot_grad_flow(self.model.named_parameters(), False)
             if not os.path.exists(os.path.join(self.experiment_saved_models, 'gradient_flow_plots')):
