@@ -119,7 +119,7 @@ class ExperimentBuilder(nn.Module):
         return total_num_params
 
 
-    def plot_func_def(self,all_grads, layers):
+    def plot_func_def(self,all_grads, layers, withBN, ax):
         
        
         """
@@ -128,20 +128,23 @@ class ExperimentBuilder(nn.Module):
         :param layers: Layer names corresponding to the model parameters
         :return: plot for gradient flow
         """
-        plt.plot(all_grads, alpha=0.3, color="b")
-        plt.hlines(0, 0, len(all_grads)+1, linewidth=1, color="k" )
-        plt.xticks(range(0,len(all_grads), 1), layers, rotation="vertical", fontsize=6)
-        plt.xlim(xmin=0, xmax=len(all_grads))
-        plt.xlabel("Layers")
-        plt.ylabel("Average Gradient")
-        plt.title("Gradient flow")
-        plt.grid(True)
-        plt.tight_layout()
+        ax.plot(all_grads, alpha=0.3, color="b")
+        ax.hlines(0, 0, len(all_grads)+1, linewidth=1, color="k" )
+        ax.set_xticks(range(0,len(all_grads), 1))
+        ax.set_xticklabels(layers, rotation="vertical", fontsize=6)
+        ax.set_xlim(xmin=0, xmax=len(all_grads))
+        ax.set_xlabel("Layers")
+        ax.set_ylabel("Average Gradient")
+        if withBN:
+            ax.set_title("Gradient flow including BN layers")
+        else:
+            ax.set_title("Gradient flow excluding BN layers")
+        ax.grid(True)
         
-        return plt
+        return ax
         
     
-    def plot_grad_flow(self, named_parameters, withBN):
+    def plot_grad_flow(self, named_parameters, withBN, ax):
         """
         The function is being called in Line 298 of this file. 
         Receives the parameters of the model being trained. Returns plot of gradient flow for the given model parameters.
@@ -160,12 +163,9 @@ class ExperimentBuilder(nn.Module):
                     all_grads.append(params.grad.abs().mean().item())
                     layer = layer.replace('layer_dict.', '').replace('.weight', '').replace('.', '_') # Removing clutter 
                     layers.append(layer)
-                    print(layer)
-                else:
-                    print("not " + layer) 
         ########################################
         
-        plt = self.plot_func_def(all_grads, layers)
+        plt = self.plot_func_def(all_grads, layers, withBN, ax)
         
         return plt
     
@@ -244,6 +244,8 @@ class ExperimentBuilder(nn.Module):
         Runs experiment train and evaluation iterations, saving the model and best val model and val model accuracy after each epoch
         :return: The summary current_epoch_losses from starting epoch to total_epochs.
         """
+        fig, (ax1, ax2) = plt.subplots(2,1)
+        
         total_losses = {"train_acc": [], "train_loss": [], "val_acc": [],
                         "val_loss": []}  # initialize a dict to keep the per-epoch metrics
         for i, epoch_idx in enumerate(range(self.starting_epoch, self.num_epochs)):
@@ -301,19 +303,17 @@ class ExperimentBuilder(nn.Module):
             ################################################################
             ##### Plot Gradient Flow at each Epoch during Training  ######
             print("Generating Gradient Flow Plot at epoch {}".format(epoch_idx))
-            plt = self.plot_grad_flow(self.model.named_parameters(), True)
+            
+            ax1 = self.plot_grad_flow(self.model.named_parameters(), True, ax1)
             if not os.path.exists(os.path.join(self.experiment_saved_models, 'gradient_flow_plots')):
                 os.mkdir(os.path.join(self.experiment_saved_models, 'gradient_flow_plots'))
                 # plt.legend(loc="best")
-            plt.savefig(os.path.join(self.experiment_saved_models, 'gradient_flow_plots', "epoch{}_bn.pdf".format(str(epoch_idx))))
+            #plt1.savefig(os.path.join(self.experiment_saved_models, 'gradient_flow_plots', "epoch{}_bn.pdf".format(str(epoch_idx))))
             
-            plt.figure().clear()
+            ax2 = self.plot_grad_flow(self.model.named_parameters(), False, ax2)
             
-            plt = self.plot_grad_flow(self.model.named_parameters(), False)
-            if not os.path.exists(os.path.join(self.experiment_saved_models, 'gradient_flow_plots')):
-                os.mkdir(os.path.join(self.experiment_saved_models, 'gradient_flow_plots'))
-                # plt.legend(loc="best")
-            plt.savefig(os.path.join(self.experiment_saved_models, 'gradient_flow_plots', "epoch{}_noBN.pdf".format(str(epoch_idx))))
+            fig.tight_layout()
+            fig.savefig(os.path.join(self.experiment_saved_models, 'gradient_flow_plots', "epoch{}.pdf".format(str(epoch_idx))))
             ################################################################
         
         print("Generating test set evaluation metrics")
